@@ -1,0 +1,6 @@
+namespace ScreenIoT;
+
+struct Message {
+    app: [ubyte:32];
+    payload: [ubyte:1024];
+}
