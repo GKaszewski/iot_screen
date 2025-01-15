@@ -1,6 +1,8 @@
 namespace ScreenIoT;
 
-struct Message {
-    app: [ubyte:32];
-    payload: [ubyte:1024];
+table Message {
+    app: string;
+    payload: string;
 }
+
+root_type Message;
