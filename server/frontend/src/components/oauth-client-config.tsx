@@ -71,7 +71,7 @@ const OAuthClientConfig = ({
   };
 
   return (
-    <Card className={cn('w-[450px] rounded-none', props.className)}>
+    <Card className={cn('w-[450px]', props.className)}>
       <CardHeader>
         <CardTitle>{appName}</CardTitle>
         <CardDescription>Configure your OAuth client</CardDescription>
@@ -96,12 +96,12 @@ const OAuthClientConfig = ({
             value={redirectUri}
             onChange={handleRedirectUriChange}
           />
-            <Label>Get Token URL</Label>
-            <Input
-              placeholder="Get Token URL"
-              value={getTokenUrl}
-              onChange={handleGetTokenUrlChange}
-            />
+          <Label>Get Token URL</Label>
+          <Input
+            placeholder="Get Token URL"
+            value={getTokenUrl}
+            onChange={handleGetTokenUrlChange}
+          />
         </div>
 
         <div className="flex flex-col gap-4 mt-4">

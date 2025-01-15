@@ -1,5 +1,6 @@
 import { StoreApi, create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { Widget } from '../types';
 
 export interface AppSlice {
   spotifyCode: string;
@@ -9,12 +10,36 @@ export interface AppSlice {
   spotifyAuthorizeUrl: string;
   spotifyGetTokenUrl: string;
 
+  xtbEmail: string;
+  xtbPassword: string;
+
+  leftWidget: Widget;
+  centerWidget: Widget;
+  rightWidget: Widget;
+
+  theme: 'light' | 'dark';
+  orientation: 'horizontal' | 'vertical';
+  accentColor: string;
+  charactersPerSecond: number;
+
   setSpotifyCode: (code: string) => void;
   setSpotifyCallbackUrl: (url: string) => void;
   setSpotifyClientId: (clientId: string) => void;
   setSpotifyClientSecret: (clientSecret: string) => void;
   setSpotifyAuthorizeUrl: (authorizeUrl: string) => void;
   setSpotifyGetTokenUrl: (getTokenUrl: string) => void;
+
+  setXtbEmail: (email: string) => void;
+  setXtbPassword: (password: string) => void;
+
+  setLeftWidget: (widget: Widget) => void;
+  setCenterWidget: (widget: Widget) => void;
+  setRightWidget: (widget: Widget) => void;
+
+  setTheme: (theme: 'light' | 'dark') => void;
+  setOrientation: (orientation: 'horizontal' | 'vertical') => void;
+  setAccentColor: (color: string) => void;
+  setCharactersPerSecond: (cps: number) => void;
 }
 
 export type StoreState = AppSlice;
@@ -31,6 +56,18 @@ const createAppSlice: StoreSlice<AppSlice> = (set) => ({
   spotifyClientSecret: '',
   spotifyAuthorizeUrl: '',
   spotifyGetTokenUrl: '',
+
+  xtbEmail: '',
+  xtbPassword: '',
+
+  leftWidget: Widget.None,
+  centerWidget: Widget.None,
+  rightWidget: Widget.None,
+
+  theme: 'light',
+  orientation: 'horizontal',
+  accentColor: '#22C55E',
+  charactersPerSecond: 2,
 
   setSpotifyCode: (code: string) => {
     set({ spotifyCode: code });
@@ -49,6 +86,36 @@ const createAppSlice: StoreSlice<AppSlice> = (set) => ({
   },
   setSpotifyGetTokenUrl: (getTokenUrl: string) => {
     set({ spotifyGetTokenUrl: getTokenUrl });
+  },
+
+  setXtbEmail: (email: string) => {
+    set({ xtbEmail: email });
+  },
+  setXtbPassword: (password: string) => {
+    set({ xtbPassword: password });
+  },
+
+  setLeftWidget: (widget: Widget) => {
+    set({ leftWidget: widget });
+  },
+  setCenterWidget: (widget: Widget) => {
+    set({ centerWidget: widget });
+  },
+  setRightWidget: (widget: Widget) => {
+    set({ rightWidget: widget });
+  },
+
+  setTheme: (theme: 'light' | 'dark') => {
+    set({ theme });
+  },
+  setOrientation: (orientation: 'horizontal' | 'vertical') => {
+    set({ orientation });
+  },
+  setAccentColor: (color: string) => {
+    set({ accentColor: color });
+  },
+  setCharactersPerSecond: (cps: number) => {
+    set({ charactersPerSecond: cps });
   },
 });
 
