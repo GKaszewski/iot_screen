@@ -12,7 +12,6 @@ pub enum MessageError {
 // Spotify -> Imagine Dragons - Believer
 pub fn send_message(app: &str, payload: &str) -> Result<Vec<u8>, MessageError> {
     if app.len() > 32 {
-        println!("App length: {}", app.len());
         return Err(MessageError::AppNameTooLong);
     }
 
