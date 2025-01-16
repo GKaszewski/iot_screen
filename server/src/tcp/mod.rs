@@ -110,8 +110,7 @@ pub async fn broadcast_new_data(
                 }
             },
             _ = interval.tick() => {
-               let current_client_count = clients.read().await.len();
-                println!("Current client count: {}", current_client_count);
+               
             },
         }
     }

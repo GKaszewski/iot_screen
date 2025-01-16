@@ -9,6 +9,7 @@ use crate::db::{add_new_oauth2_token_to_db, OAuth2Token};
 pub mod weather;
 pub mod oauth2;
 pub mod spotify;
+pub mod xtb;
 
 pub async fn initialize_axum_server(
     db: SqlitePool,

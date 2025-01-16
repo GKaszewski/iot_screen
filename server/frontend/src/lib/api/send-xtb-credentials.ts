@@ -1,7 +1,7 @@
 import { base } from './base';
 
 export type SendXtbCredentialsPayload = {
-  email: string;
+  userId: string;
   password: string;
 };
 

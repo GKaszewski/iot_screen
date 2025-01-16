@@ -13,6 +13,7 @@ use tokio::time::interval;
 use web::initialize_axum_server;
 use web::spotify::spotify_polling_task;
 use web::weather::weather_polling_task;
+use web::xtb::initialize_xtb_websocket;
 
 type Clients = Arc<RwLock<HashMap<String, mpsc::Sender<Vec<u8>>>>>;
 
@@ -39,6 +40,7 @@ async fn main() {
 
     let (state_sender, state_receiver) = mpsc::channel::<StateMessage>(100);
 
+    tokio::spawn(initialize_xtb_websocket());
     tokio::spawn(initialize_axum_server(db.clone()));
     tokio::spawn(broadcast_new_data(clients.clone(), state_receiver));
     tokio::spawn(heartbeat_task(state_sender.clone()));

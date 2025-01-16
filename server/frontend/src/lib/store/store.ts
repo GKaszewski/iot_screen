@@ -10,7 +10,7 @@ export interface AppSlice {
   spotifyAuthorizeUrl: string;
   spotifyGetTokenUrl: string;
 
-  xtbEmail: string;
+  xtbUserId: string;
   xtbPassword: string;
 
   leftWidget: Widget;
@@ -29,7 +29,7 @@ export interface AppSlice {
   setSpotifyAuthorizeUrl: (authorizeUrl: string) => void;
   setSpotifyGetTokenUrl: (getTokenUrl: string) => void;
 
-  setXtbEmail: (email: string) => void;
+  setXtbUserId: (email: string) => void;
   setXtbPassword: (password: string) => void;
 
   setLeftWidget: (widget: Widget) => void;
@@ -57,7 +57,7 @@ const createAppSlice: StoreSlice<AppSlice> = (set) => ({
   spotifyAuthorizeUrl: '',
   spotifyGetTokenUrl: '',
 
-  xtbEmail: '',
+  xtbUserId: '',
   xtbPassword: '',
 
   leftWidget: Widget.None,
@@ -88,8 +88,8 @@ const createAppSlice: StoreSlice<AppSlice> = (set) => ({
     set({ spotifyGetTokenUrl: getTokenUrl });
   },
 
-  setXtbEmail: (email: string) => {
-    set({ xtbEmail: email });
+  setXtbUserId: (email: string) => {
+    set({ xtbUserId: email });
   },
   setXtbPassword: (password: string) => {
     set({ xtbPassword: password });

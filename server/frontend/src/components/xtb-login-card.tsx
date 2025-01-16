@@ -13,20 +13,22 @@ import { sendXtbCredentials } from '@/lib/api/send-xtb-credentials';
 import { toast } from 'sonner';
 
 const XtbLoginScreen = () => {
-  const xtbEmail = useAppStore((state) => state.xtbEmail);
+  const xtbUserId = useAppStore((state) => state.xtbUserId);
   const xtbPassword = useAppStore((state) => state.xtbPassword);
-  const setXtbEmail = useAppStore((state) => state.setXtbEmail);
+  const setXtbUserId = useAppStore((state) => state.setXtbUserId);
   const setXtbPassword = useAppStore((state) => state.setXtbPassword);
 
   const handleSaveCredentials = async () => {
-    if (!xtbEmail || !xtbPassword) {
+    if (!xtbUserId || !xtbPassword) {
       toast.info('Please enter your XTB credentials', {
         position: 'top-right',
       });
       return;
     }
 
-    if (await sendXtbCredentials({ email: xtbEmail, password: xtbPassword })) {
+    if (
+      await sendXtbCredentials({ userId: xtbUserId, password: xtbPassword })
+    ) {
       toast.success('Credentials saved successfully', {
         position: 'top-right',
       });
@@ -45,11 +47,11 @@ const XtbLoginScreen = () => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4 mb-4">
-          <Label>Email</Label>
+          <Label>User ID</Label>
           <Input
             type="email"
-            value={xtbEmail}
-            onChange={(e) => setXtbEmail(e.target.value)}
+            value={xtbUserId}
+            onChange={(e) => setXtbUserId(e.target.value)}
           />
           <Label>Password</Label>
           <Input
