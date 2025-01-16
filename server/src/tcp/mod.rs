@@ -1,5 +1,5 @@
 use core::send_message;
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::{Duration, Instant}};
 
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -77,6 +77,12 @@ pub async fn broadcast_new_data(
         );
     }
 
+    const MAX_MESSAGES_PER_SECOND: usize = 2;
+    const BATCH_INTERVAL: Duration = Duration::from_secs(1);
+
+    let mut last_sent = Instant::now();
+    let mut batch_buffer: Vec<(String, Vec<u8>) > = Vec::new();
+
     while let Some(state) = state_receiver.recv().await {
         let (data_type, payload) = match state {
             StateMessage::TrackData(track_data) => ("Spotify", send_message("Spotify", &track_data)),
@@ -90,7 +96,18 @@ pub async fn broadcast_new_data(
 
         match payload {
             Ok(payload) => {
-                broadcast_to_clients(&clients, payload, data_type).await;
+                batch_buffer.push((data_type.to_string(), payload));
+
+                if last_sent.elapsed() >= BATCH_INTERVAL {
+                    let batch = batch_buffer.drain(..MAX_MESSAGES_PER_SECOND.min(batch_buffer.len())).collect::<Vec<_>>();
+
+                    for (data_type, payload) in batch {
+                        broadcast_to_clients(&clients, payload, &data_type).await;
+                    }
+
+                    last_sent = Instant::now();
+                    println!("Sent batch of messages");
+                }
             }
             Err(e) => {
                 eprintln!("Failed to send message for {}: {:?}", data_type, e);
