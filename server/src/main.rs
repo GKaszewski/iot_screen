@@ -1,15 +1,12 @@
 use std::collections::HashMap;
 
-use std::env;
 use std::sync::Arc;
-use std::time::Duration;
 
 use db::initialize_db;
-use sqlx::SqlitePool;
+
 use tcp::{broadcast_new_data, handle_client, heartbeat_task, StateMessage};
 use tokio::net::TcpListener;
 use tokio::sync::{mpsc, RwLock};
-use tokio::time::interval;
 use web::initialize_axum_server;
 use web::spotify::spotify_polling_task;
 use web::weather::weather_polling_task;
@@ -39,13 +36,12 @@ async fn main() {
     println!("Listening on port 2699");
 
     let (state_sender, state_receiver) = mpsc::channel::<StateMessage>(100);
-
-    tokio::spawn(initialize_xtb_websocket());
     tokio::spawn(initialize_axum_server(db.clone()));
     tokio::spawn(broadcast_new_data(clients.clone(), state_receiver));
     tokio::spawn(heartbeat_task(state_sender.clone()));
     tokio::spawn(spotify_polling_task(db.clone(), state_sender.clone()));
     tokio::spawn(weather_polling_task(state_sender.clone()));
+    tokio::spawn(initialize_xtb_websocket(db.clone(), state_sender.clone()));
 
     loop {
         if let Ok((stream, addr)) = listener.accept().await {

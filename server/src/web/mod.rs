@@ -4,7 +4,7 @@ use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use tower_http::{cors::{AllowHeaders, CorsLayer}, services::ServeDir};
 
-use crate::db::{add_new_oauth2_token_to_db, OAuth2Token};
+use crate::db::{add_new_oauth2_token_to_db, save_xtb_credentials, OAuth2Token};
 
 pub mod weather;
 pub mod oauth2;
@@ -23,6 +23,7 @@ pub async fn initialize_axum_server(
     let app = Router::new()
     .route("/health", get(health_check))
     .route("/oauth2/code", post(post_oauth2_code))
+    .route("/xtb/credentials", post(send_xtb_credentials))
     .layer(
         CorsLayer::new()
         .allow_origin(origins)
@@ -58,9 +59,7 @@ struct PostOAuth2Payload {
 }
 
 async fn post_oauth2_code(State(db): State<SqlitePool>, Json(payload): Json<PostOAuth2Payload>) -> impl IntoResponse {
-    println!("Hello from post_oauth2_code");
     let PostOAuth2Payload { code, app_name, client_secret, client_id, redirect_uri, get_token_url } = payload;
-    println!("Received OAuth2 code for app: {}", app_name);
 
     match app_name.as_str() {
         "spotify" => {
@@ -83,6 +82,25 @@ async fn post_oauth2_code(State(db): State<SqlitePool>, Json(payload): Json<Post
         },
         _ => return "Invalid app name".into_response(),
     }
+
+    axum::http::StatusCode::OK.into_response()
+}
+
+#[derive(Deserialize)]
+struct SendXtbCredentialsPayload {
+    #[serde(rename = "userId")]
+    user_id: String,
+    password: String,
+}
+
+async fn send_xtb_credentials(State(db): State<SqlitePool>, Json(payload): Json<SendXtbCredentialsPayload>) -> impl IntoResponse {
+    let SendXtbCredentialsPayload { user_id, password } = payload;
+
+    let _ = save_xtb_credentials(
+        &db,
+        user_id,
+        password,
+    ).await;
 
     axum::http::StatusCode::OK.into_response()
 }

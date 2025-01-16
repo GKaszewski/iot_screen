@@ -13,6 +13,7 @@ pub type Clients = Arc<RwLock<HashMap<String, mpsc::Sender<Vec<u8>>>>>;
 pub enum StateMessage {
     TrackData(String),
     WeatherData(String),
+    XtbData(String),
     Ping,
 }
 
@@ -62,56 +63,38 @@ pub async fn broadcast_new_data(
     clients: Clients,
     mut state_receiver: mpsc::Receiver<StateMessage>,
 ) {
-    let mut interval = interval(Duration::from_secs(5));
+    async fn broadcast_to_clients(clients: &Clients, payload: Vec<u8>, data_type: &str) {
+        let clients_lock = clients.read().await;
+        for (_, sender) in clients_lock.iter() {
+            if sender.send(payload.clone()).await.is_err() {
+                println!("Client disconnected");
+            }
+        }
 
-    loop {
-        tokio::select! {
-            Some(state) = state_receiver.recv() => {
-                match state {
-                    StateMessage::TrackData(track_data) => {
-                        let payload = send_message("Spotify", &track_data).unwrap();
-                        let clients_lock = clients.read().await;
-                        for (_, sender) in clients_lock.iter() {
-                            if sender.send(payload.clone()).await.is_err() {
-                                println!("Client disconnected");
-                            }
-                            println!("Broadcasted track data: {}", track_data);
-                            tokio::time::sleep(Duration::from_secs(2)).await;
-                        }
+        println!(
+            "Broadcasted {}!",
+            data_type,
+        );
+    }
 
+    while let Some(state) = state_receiver.recv().await {
+        let (data_type, payload) = match state {
+            StateMessage::TrackData(track_data) => ("Spotify", send_message("Spotify", &track_data)),
+            StateMessage::WeatherData(weather_data) => ("Weather", send_message("Weather", &weather_data)),
+            StateMessage::XtbData(xtb_data) => ("XTB", send_message("XTB", &xtb_data)),
+            _ => {
+                println!("Unknown message");
+                continue;
+            }
+        };
 
-                    },
-                    StateMessage::WeatherData(weather_data) => {
-                        let payload = send_message("Weather", &weather_data).unwrap();
-                        let clients_lock = clients.read().await;
-                        for (_, sender) in clients_lock.iter() {
-                            if sender.send(payload.clone()).await.is_err() {
-                                println!("Client disconnected");
-                            }
-                            println!("Broadcasted weather data: {}", weather_data);
-                            tokio::time::sleep(Duration::from_secs(2)).await;
-                        }
-
-
-                    },
-                    StateMessage::Ping => {
-                        let payload = send_message("Ping", "PONG").unwrap();
-                        let clients_lock = clients.read().await;
-                        for (_, sender) in clients_lock.iter() {
-                            if sender.send(payload.clone()).await.is_err() {
-                                println!("Client disconnected");
-                            }
-                            println!("Broadcasted PING");
-                            tokio::time::sleep(Duration::from_secs(2)).await;
-                        }
-
-
-                    }
-                }
-            },
-            _ = interval.tick() => {
-               
-            },
+        match payload {
+            Ok(payload) => {
+                broadcast_to_clients(&clients, payload, data_type).await;
+            }
+            Err(e) => {
+                eprintln!("Failed to send message for {}: {:?}", data_type, e);
+            }
         }
     }
 }

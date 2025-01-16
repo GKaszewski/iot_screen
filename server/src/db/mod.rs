@@ -31,10 +31,10 @@ pub struct WeatherRow {
 }
 
 #[derive(Debug, sqlx::FromRow)]
-struct ApiKeyRow {
-    id: i64,
-    service_name: String,
-    key: String,
+pub struct ApiKeyRow {
+    pub id: i64,
+    pub service_name: String,
+    pub key: String,
 }
 
 pub async fn get_latest_weather_from_db(pool: &SqlitePool) -> anyhow::Result<Option<WeatherRow>> {
@@ -265,6 +265,68 @@ pub async fn delete_oauth2_token_from_db(
     "#;
 
     sqlx::query(query).bind(app_name).execute(pool).await?;
+
+    Ok(())
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct XtbCredentials {
+    pub user_id: String,
+    pub password: String,
+}
+
+pub async fn get_xtb_credentials(pool: &SqlitePool) -> anyhow::Result<Option<XtbCredentials>> {
+    let row = sqlx::query_as::<_, XtbCredentials>(
+        r#"
+        SELECT user_id, password
+        FROM xtb_credentials
+        "#,
+    )
+    .fetch_optional(pool)
+    .await?;
+
+    Ok(row)
+}
+
+pub async fn save_xtb_credentials(
+    pool: &SqlitePool,
+    user_id: String,
+    password: String,
+) -> anyhow::Result<()> {
+    let exists = get_xtb_credentials(pool).await?;
+    if let Some(_) = exists {
+        let query = r#"
+            UPDATE xtb_credentials
+            SET user_id = ?, password = ?
+        "#;
+
+        sqlx::query(query)
+            .bind(user_id)
+            .bind(password)
+            .execute(pool)
+            .await?;
+    } else {
+        let query = r#"
+        INSERT INTO xtb_credentials (user_id, password)
+        VALUES (?, ?)
+    "#;
+
+        sqlx::query(query)
+            .bind(user_id)
+            .bind(password)
+            .execute(pool)
+            .await?;
+    }
+
+    Ok(())
+}
+
+pub async fn delete_xtb_credentials(pool: &SqlitePool) -> anyhow::Result<()> {
+    let query = r#"
+        DELETE FROM xtb_credentials
+    "#;
+
+    sqlx::query(query).execute(pool).await?;
 
     Ok(())
 }
